@@ -72,39 +72,18 @@ def end_read(signal,frame):
 # Hook the SIGINT
 signal.signal(signal.SIGINT, end_read)
 
-# possible parameter: hex, deb, cont and help
-if len(sys.argv)>1:
- i = 1
- while i<len(sys.argv):
-  if sys.argv[i] == "hex":
-   v_hex = 1
-  elif sys.argv[i] == "deb":
-   v_deb = 1
-  elif sys.argv[i] == "cont":
-   v_cont = 1
-  elif sys.argv[i] == "help":
-   print "\n"+sys.argv[0]+" have possible parameter: hex, deb, cont\n"
-   continue_reading = False
-   exit
-  else:
-   print "unknow parameter: "+sys.argv[i]
-   continue_reading = False
-  i = i+1
-
-# Welcome message if debbug option is set
-if (v_deb == 1) & continue_reading:
- print "Welcome to the MFRC522 data read example for Classic and DESFire Cards"
- print "Press Ctrl-C to stop UID read funtion.\n"
-
 # Create an object of the class MFRC522
 MIFAREReader = MFRC522.MFRC522()
 
 
 mpc = {
-"040A3BF1F52580" : "mpc volume 55; mpc clear; mpc add Bibi40.mp3; mpc play", 
-"044F3E12062280" : "mpc volume 55; mpc clear; mpc add Drachen1.mp3; mpc play", 
-"3B2A41D5":"mpc volume 55; mpc clear; mpc add Drachen2.mp3; mpc play"
+#"040A3BF1F52580" : "mpc volume 65; mpc clear; mpc add Bibi40.mp3; mpc play", 
+"040A3BF1F52580" : "mpc add Bibi;", 
+"044F3E12062280" : "mpc add Drachen1.mp3;", 
+"3B2A41D5":"mpc add Drachen2.mp3;"
 }
+mpcpre = "mpc volume 65; mpc clear; "
+mpcsuf = "mpc play"
 
 while continue_reading:
  (status,TagType,CardTypeRec) = MIFAREReader.MFRC522_Request(MIFAREReader.PICC_REQIDL)
@@ -113,32 +92,17 @@ while continue_reading:
   (status,uid,uidData) = MIFAREReader.MFRC522_Anticoll()
   if status == MIFAREReader.MI_OK:
    count_error = 0
-   if v_deb == 1:
-    if cardTypeNo == 4:
-     cardType = "Mifare Classic"
-    elif cardTypeNo == 836:
-     cardType = "Mifare DESFire"
-    else:
-     cardType = "Unknow RIFD"
-    cardType = cardType+" Card UID " 
-   else:
-     cardType = ""
+   cardType = ""
    
    cardSN = MIFAREReader.list2HexStr(uidData)
-   if v_hex == 0:
-    cardSN = str(int(cardSN,16))
    if cardSNold == cardSN:
     # wait one sec. befor next read will be started
     time.sleep(5)
    else:
-    print cardType+cardSN
-    os.system(mpc[cardSN]);
-    if v_deb == 1:
-     print "\n"
+    print cardSN
+    os.system(mpcpre+mpc[cardSN]+mpcsuf);
     cardSNold = cardSN
   else:
-   if v_deb == 1:
-    print "Anticollision Error"
    cardSNold = ""
  else:
   # Card read error / no Card found
