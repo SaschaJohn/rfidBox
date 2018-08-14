@@ -79,13 +79,13 @@ MIFAREReader = MFRC522.MFRC522()
 
 
 mpc = {
-"040A3BF1F52580" : "mpc add Bibi40.mp3", 
-"36FA6A90" : "mpc add Bibi;", 
-"044F3E12062280" : "mpc add Drachen1.mp3;", 
-"3B2A41D5":"mpc add Drachen2.mp3;"
+"040A3BF1F52580" : "Bibi40.mp3", 
+"36FA6A90" : "Bibi", 
+"044F3E12062280" : "Drachen1.mp3", 
+"3B2A41D5":"Drachen2.mp3"
 }
-mpcpre = "mpc volume 65; mpc clear; "
-mpcsuf = "mpc play"
+mpcpre = "mpc volume 65; mpc clear; mpc "
+mpcsuf = ";mpc play"
 
 while continue_reading:
  (status,TagType,CardTypeRec) = MIFAREReader.MFRC522_Request(MIFAREReader.PICC_REQIDL)
@@ -106,12 +106,14 @@ while continue_reading:
     if "mp3" not in mpc[cardSN]: 
         # Handle m3u
         # cat /var/lib/mpd/playlists/Bibi.m3u | wc -l
-        lineCount = subprocess.check_output("cat /var/lib/mpd/playlists/"+mpc[cardSN]+".m3u | wc -l", shell=True)
-        random = randint(1, lineCount) # get random Interger between 1 and playlist length
-        os.system(mpcpre+mpc[cardSN]+mpcsuf+" "+random); # play random position in playlist
+	command = "cat /var/lib/mpd/playlists/"+mpc[cardSN]+".m3u | wc -l"
+	print "command: " + command
+        lineCount = subprocess.check_output(command, shell=True)
+        random = randint(1, int(lineCount)) # get random Interger between 1 and playlist length
+        os.system(mpcpre+"load "+mpc[cardSN]+mpcsuf+" "+str(random)); # play random position in playlist
     else: 
         # Handle singe mp3
-        os.system(mpcpre+mpc[cardSN]+mpcsuf);
+        os.system(mpcpre+"add "+mpc[cardSN]+mpcsuf);
     ################## Play ##################
     cardSNold = cardSN
   else:
