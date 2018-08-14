@@ -8,6 +8,8 @@ import signal
 import time
 import sys
 import os
+import subprocess
+from random import randint
 
 # SoC als Pinreferenz waehlen
 GPIO.setmode(GPIO.BOARD)
@@ -77,8 +79,8 @@ MIFAREReader = MFRC522.MFRC522()
 
 
 mpc = {
-#"040A3BF1F52580" : "mpc volume 65; mpc clear; mpc add Bibi40.mp3; mpc play", 
-"040A3BF1F52580" : "mpc add Bibi;", 
+"040A3BF1F52580" : "mpc add Bibi40.mp3", 
+"36FA6A90" : "mpc add Bibi;", 
 "044F3E12062280" : "mpc add Drachen1.mp3;", 
 "3B2A41D5":"mpc add Drachen2.mp3;"
 }
@@ -96,11 +98,21 @@ while continue_reading:
    
    cardSN = MIFAREReader.list2HexStr(uidData)
    if cardSNold == cardSN:
-    # wait one sec. befor next read will be started
+    # wait one sec. before next read will be started
     time.sleep(5)
    else:
     print cardSN
-    os.system(mpcpre+mpc[cardSN]+mpcsuf);
+    ################## Play ##################
+    if "mp3" not in mpc[cardSN]: 
+        # Handle m3u
+        # cat /var/lib/mpd/playlists/Bibi.m3u | wc -l
+        lineCount = subprocess.check_output("cat /var/lib/mpd/playlists/"+mpc[cardSN]+".m3u | wc -l", shell=True)
+        random = randint(1, lineCount) # get random Interger between 1 and playlist length
+        os.system(mpcpre+mpc[cardSN]+mpcsuf+" "+random); # play random position in playlist
+    else: 
+        # Handle singe mp3
+        os.system(mpcpre+mpc[cardSN]+mpcsuf);
+    ################## Play ##################
     cardSNold = cardSN
   else:
    cardSNold = ""
